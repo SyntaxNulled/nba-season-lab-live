@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { TEAMS } from "../site/js/baseline.js";
 import {
   normalize,
   espnParse,
@@ -108,7 +109,47 @@ test("buildSnapshot: ingests ESPN data with stubbed fetch", async (t) => {
   const games = snapshot.sources.find((s) => s.name === "NBA schedule");
   assert.strictEqual(games.status, "ok");
   assert.strictEqual(games.games, 2, "schedule coverage exposed as game count");
-  assert.strictEqual(snapshot.warning, null);
+  assert.ok(snapshot.warning, "warning present when fewer than 30 teams are ingested");
+});
+
+test("buildSnapshot: a complete 30-team feed sets no warning", async (t) => {
+  const espnPayload = (names) => ({
+    children: [
+      {
+        standings: {
+          entries: names.map((name, i) => ({
+            team: { displayName: name },
+            stats: [
+              { name: "wins", value: 40 + i },
+              { name: "losses", value: 42 - i },
+              { name: "winPercent", value: 0.488 + (i % 30) / 100 },
+              { name: "pointDifferential", value: (i % 30) - 15 }
+            ]
+          }))
+        }
+      }
+    ]
+  });
+
+  const sampleMap = new Map([
+    [
+      "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?region=us&lang=en&contentorigin=espn&type=0&level=2",
+      espnPayload(TEAMS.map((x) => x.name))
+    ],
+    [
+      "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_1.json",
+      { leagueSchedule: { gameDates: [{ games: [{}] }, { games: [{}] }] } }
+    ]
+  ]);
+
+  t.mock.method(globalThis, "fetch", async (url) => {
+    if (!sampleMap.has(url)) throw new Error(`unexpected url ${url}`);
+    return { ok: true, json: async () => sampleMap.get(url) };
+  });
+
+  const snapshot = await buildSnapshot();
+  assert.strictEqual(snapshot.teams.length, 30);
+  assert.strictEqual(snapshot.warning, null, "no warning for a complete feed");
 });
 
 test("writeSnapshot: writes latest plus dated history file", async () => {
