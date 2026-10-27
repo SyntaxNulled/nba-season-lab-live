@@ -3,10 +3,13 @@ import { simulate } from "./runner.js";
 import { loadSnapshot } from "./loader.js";
 import { $, $$ } from "./ui.js";
 import * as ui from "./ui.js";
+import { BATCH_SIZE } from "./sim.worker.js";
 
 let teams = TEAMS.map((t) => ({ ...t }));
 let filter = "All";
 let last = [];
+let worker = null;
+let runToken = 0;
 
 function readConfig() {
   return {
@@ -14,12 +17,15 @@ function readConfig() {
     sims: +$("#sims").value,
     homeAdvantage: +$("#home").value,
     volatilityIndex: +$("#vol").value,
-    playin: $("#playin").checked
+    playin: $("#playin").checked,
+    seed: 1,
+    converge: true,
+    batchSize: BATCH_SIZE
   };
 }
 
-function run() {
-  const out = simulate(readConfig());
+function applyResult(out, token) {
+  if (token !== runToken) return;
   last = out.results;
   ui.updateMetrics(out);
   ui.renderResults(last, $("#search").value);
@@ -27,6 +33,31 @@ function run() {
   const toast = $("#toast");
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 1800);
+}
+
+function run() {
+  const config = readConfig();
+  const token = ++runToken;
+
+  if (typeof Worker !== "undefined") {
+    try {
+      if (!worker) {
+        worker = new Worker(new URL("./sim.worker.js", import.meta.url), { type: "module" });
+        worker.onmessage = (e) => {
+          if (e.data?.type === "result" && e.data.result) applyResult(e.data.result, token);
+        };
+        worker.onerror = () => {
+          // Worker unavailable/failed -> fall back to main-thread simulation.
+          if (token === runToken) applyResult(simulate(config), token);
+        };
+      }
+      worker.postMessage({ config });
+      return;
+    } catch (err) {
+      // Fall through to direct simulation.
+    }
+  }
+  applyResult(simulate(config), token);
 }
 
 function resetRatings() {

@@ -59,19 +59,20 @@ export function renderResults(results, search = "") {
       </div>
       <span>${x.po.toFixed(1)}%</span>
       <span>${x.fin.toFixed(1)}%</span>
-      <span class="pct-title">${x.title.toFixed(1)}%</span>
+      <span class="pct-title">${x.title.toFixed(1)}% ± ${(((x.titleHi - x.titleLo) / 2) * 100).toFixed(1)}%</span>
     `;
     box.appendChild(d);
   });
 }
 
 export function updateMetrics({ top, finalist, dark, confidence }) {
+  const halfWidth = (ci) => ((ci.hi - ci.lo) / 2) * 100;
   $("#fav").textContent = top.t.name;
-  $("#favPct").textContent = top.title.toFixed(1) + "% title odds";
+  $("#favPct").textContent = `${top.title.toFixed(1)}% ± ${halfWidth(top).toFixed(1)}% title odds`;
   $("#finalist").textContent = finalist.t.name;
-  $("#finalPct").textContent = finalist.fin.toFixed(1) + "% Finals odds";
+  $("#finalPct").textContent = `${finalist.fin.toFixed(1)}% ± ${halfWidth(finalist).toFixed(1)}% Finals odds`;
   $("#dark").textContent = dark.t.name;
-  $("#darkPct").textContent = dark.title.toFixed(1) + "% title odds";
+  $("#darkPct").textContent = `${dark.title.toFixed(1)}% ± ${halfWidth(dark).toFixed(1)}% title odds`;
   $("#confidence").textContent = confidence;
 }
 
