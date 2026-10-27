@@ -1,9 +1,68 @@
-import http from 'node:http';import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';
-const root=path.dirname(fileURLToPath(import.meta.url)),port=process.env.PORT||3000;let cache={at:0,data:null};
-const TEAM_ALIAS={'LA Clippers':'Los Angeles Clippers','NY Knicks':'New York Knicks','Golden State':'Golden State Warriors','Oklahoma City':'Oklahoma City Thunder','San Antonio':'San Antonio Spurs','New Orleans':'New Orleans Pelicans'};
-async function getJSON(url,headers={}){const c=new AbortController(),timer=setTimeout(()=>c.abort(),8000);try{const r=await fetch(url,{headers:{'user-agent':'NBA-Season-Lab/2.0 (+personal analytics app)',accept:'application/json',...headers},signal:c.signal});if(!r.ok)throw Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(timer)}}
-function espnParse(j){const rows=[];for(const group of j.children||[])for(const e of group.standings?.entries||[]){const stats=Object.fromEntries((e.stats||[]).map(s=>[s.name,s.value]));const raw=e.team?.displayName;rows.push({name:TEAM_ALIAS[raw]||raw,wins:stats.wins||0,losses:stats.losses||0,winPct:stats.winPercent||0,pointDiff:stats.pointDifferential||0,source:'ESPN'})}return rows}
-async function source(name,fn){const started=Date.now();try{const data=await fn();return{name,status:'ok',latencyMs:Date.now()-started,updatedAt:new Date().toISOString(),data}}catch(e){return{name,status:'error',latencyMs:Date.now()-started,updatedAt:new Date().toISOString(),error:e.message,data:[]}}}
-async function aggregate(){if(cache.data&&Date.now()-cache.at<300000)return cache.data;const tasks=[source('ESPN standings',async()=>espnParse(await getJSON('https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?region=us&lang=en&contentorigin=espn&type=0&level=2'))),source('NBA schedule',async()=>{const j=await getJSON('https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_1.json');return{games:j?.leagueSchedule?.gameDates?.reduce((n,d)=>n+(d.games?.length||0),0)||0}})];if(process.env.BALLDONTLIE_API_KEY)tasks.push(source('BALLDONTLIE injuries',async()=>{const j=await getJSON('https://api.balldontlie.io/v1/injuries?per_page=100', {Authorization:process.env.BALLDONTLIE_API_KEY});return j.data||[]}));const sources=await Promise.all(tasks),standings=sources.find(s=>s.name==='ESPN standings')?.data||[];const teams=standings.map(t=>({...t,rating:Math.max(55,Math.min(100,Math.round(76+t.winPct*15+t.pointDiff*.65))),provenance:['ESPN standings']}));const data={generatedAt:new Date().toISOString(),cacheSeconds:300,season:'current',teams,sources:sources.map(({data,...s})=>({...s,records:Array.isArray(data)?data.length:undefined})),injuries:sources.find(s=>s.name.includes('injuries'))?.data||[],warning:teams.length<30?'Live standings incomplete; simulator retains its local baseline for unmatched teams.':null};cache={at:Date.now(),data};return data}
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json'};
-http.createServer(async(req,res)=>{try{if(req.url.startsWith('/api/snapshot')){res.setHeader('content-type','application/json');res.setHeader('cache-control','public,max-age=60');return res.end(JSON.stringify(await aggregate()))}if(req.url==='/api/health'){return res.end(JSON.stringify({ok:true,cacheAgeSec:cache.at?Math.round((Date.now()-cache.at)/1000):null}))}const url=req.url==='/'?'/index.html':req.url.split('?')[0],file=path.join(root,path.normalize(url).replace(/^\.\.(\/|\\|$)/,''));if(!file.startsWith(root))throw Error('invalid path');res.setHeader('content-type',mime[path.extname(file)]||'application/octet-stream');res.end(await fs.readFile(file))}catch(e){res.statusCode=e.code==='ENOENT'?404:500;res.end(JSON.stringify({error:e.message}))}}).listen(port,()=>console.log(`NBA Season Lab live on http://localhost:${port}`));
+import http from "node:http";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildSnapshot } from "./scripts/build-snapshot.mjs";
+
+const root = path.dirname(fileURLToPath(import.meta.url));
+const siteRoot = path.join(root, "site");
+const dataRoot = path.join(root, "data");
+const port = process.env.PORT || 3000;
+const CACHE_MS = 5 * 60 * 1000;
+
+const cache = { at: 0, data: null };
+
+const mime = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".svg": "image/svg+xml",
+  ".png": "image/png"
+};
+
+async function snapshotHandler() {
+  if (cache.data && Date.now() - cache.at < CACHE_MS) return cache.data;
+  const data = await buildSnapshot();
+  cache = { at: Date.now(), data };
+  return data;
+}
+
+const server = http.createServer(async (req, res) => {
+  try {
+    if (req.url === "/api/snapshot") {
+      res.setHeader("content-type", "application/json");
+      res.setHeader("cache-control", "public, max-age=60");
+      return res.end(JSON.stringify(await snapshotHandler()));
+    }
+
+    if (req.url === "/api/health") {
+      return res.end(
+        JSON.stringify({
+          ok: true,
+          cacheAgeSec: cache.at ? Math.round((Date.now() - cache.at) / 1000) : null
+        })
+      );
+    }
+
+    if (req.url.startsWith("/data/")) {
+      const file = path.join(dataRoot, path.normalize(req.url.slice(1)));
+      if (!file.startsWith(dataRoot)) throw new Error("invalid path");
+      res.setHeader("content-type", mime[path.extname(file)] || "application/octet-stream");
+      return res.end(await fs.readFile(file));
+    }
+
+    const url = req.url === "/" ? "/index.html" : req.url.split("?")[0];
+    const file = path.join(siteRoot, path.normalize(url).replace(/^\.\.(\/|\\|$)/, ""));
+    if (!file.startsWith(siteRoot)) throw new Error("invalid path");
+    res.setHeader("content-type", mime[path.extname(file)] || "application/octet-stream");
+    res.end(await fs.readFile(file));
+  } catch (e) {
+    res.statusCode = e.code === "ENOENT" ? 404 : 500;
+    res.end(JSON.stringify({ error: e.message }));
+  }
+});
+
+server.listen(port, () => {
+  console.log(`NBA Season Lab live on http://localhost:${port}`);
+});

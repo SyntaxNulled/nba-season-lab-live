@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-10-27T00:00:00.000Z",
+  "cacheSeconds": 300,
+  "season": "current",
+  "source": "baseline",
+  "teams": [
+    { "name": "Boston Celtics", "wins": 64, "losses": 18, "winPct": 0.78, "pointDiff": 8.4, "rating": 91, "base": 91 },
+    { "name": "Cleveland Cavaliers", "wins": 63, "losses": 19, "winPct": 0.77, "pointDiff": 7.9, "rating": 90, "base": 90 },
+    { "name": "New York Knicks", "wins": 61, "losses": 21, "winPct": 0.74, "pointDiff": 6.1, "rating": 89, "base": 89 },
+    { "name": "Orlando Magic", "wins": 52, "losses": 30, "winPct": 0.63, "pointDiff": 2.8, "rating": 84, "base": 84 },
+    { "name": "Detroit Pistons", "wins": 51, "losses": 31, "winPct": 0.62, "pointDiff": 2.3, "rating": 83, "base": 83 },
+    { "name": "Milwaukee Bucks", "wins": 50, "losses": 32, "winPct": 0.61, "pointDiff": 1.9, "rating": 82, "base": 82 },
+    { "name": "Atlanta Hawks", "wins": 47, "losses": 35, "winPct": 0.57, "pointDiff": 1.0, "rating": 80, "base": 80 },
+    { "name": "Philadelphia 76ers", "wins": 46, "losses": 36, "winPct": 0.56, "pointDiff": 0.8, "rating": 79, "base": 79 },
+    { "name": "Indiana Pacers", "wins": 45, "losses": 37, "winPct": 0.55, "pointDiff": 0.6, "rating": 78, "base": 78 },
+    { "name": "Miami Heat", "wins": 44, "losses": 38, "winPct": 0.54, "pointDiff": 0.4, "rating": 77, "base": 77 },
+    { "name": "Toronto Raptors", "wins": 41, "losses": 41, "winPct": 0.50, "pointDiff": -0.2, "rating": 75, "base": 75 },
+    { "name": "Chicago Bulls", "wins": 40, "losses": 42, "winPct": 0.49, "pointDiff": -0.4, "rating": 74, "base": 74 },
+    { "name": "Brooklyn Nets", "wins": 33, "losses": 49, "winPct": 0.40, "pointDiff": -2.6, "rating": 69, "base": 69 },
+    { "name": "Charlotte Hornets", "wins": 32, "losses": 50, "winPct": 0.39, "pointDiff": -2.9, "rating": 68, "base": 68 },
+    { "name": "Washington Wizards", "wins": 29, "losses": 53, "winPct": 0.35, "pointDiff": -4.1, "rating": 66, "base": 66 },
+    { "name": "Oklahoma City Thunder", "wins": 68, "losses": 14, "winPct": 0.83, "pointDiff": 11.2, "rating": 96, "base": 96 },
+    { "name": "Denver Nuggets", "wins": 63, "losses": 19, "winPct": 0.77, "pointDiff": 7.1, "rating": 92, "base": 92 },
+    { "name": "Minnesota Timberwolves", "wins": 56, "losses": 26, "winPct": 0.68, "pointDiff": 5.2, "rating": 88, "base": 88 },
+    { "name": "Houston Rockets", "wins": 54, "losses": 28, "winPct": 0.66, "pointDiff": 4.5, "rating": 87, "base": 87 },
+    { "name": "Los Angeles Lakers", "wins": 51, "losses": 31, "winPct": 0.62, "pointDiff": 3.4, "rating": 85, "base": 85 },
+    { "name": "Golden State Warriors", "wins": 50, "losses": 32, "winPct": 0.61, "pointDiff": 3.1, "rating": 84, "base": 84 },
+    { "name": "Los Angeles Clippers", "wins": 48, "losses": 34, "winPct": 0.59, "pointDiff": 2.4, "rating": 82, "base": 82 },
+    { "name": "San Antonio Spurs", "wins": 46, "losses": 36, "winPct": 0.56, "pointDiff": 1.7, "rating": 81, "base": 81 },
+    { "name": "Memphis Grizzlies", "wins": 44, "losses": 38, "winPct": 0.54, "pointDiff": 0.9, "rating": 79, "base": 79 },
+    { "name": "Dallas Mavericks", "wins": 43, "losses": 39, "winPct": 0.52, "pointDiff": 0.7, "rating": 78, "base": 78 },
+    { "name": "Sacramento Kings", "wins": 40, "losses": 42, "winPct": 0.49, "pointDiff": -0.3, "rating": 76, "base": 76 },
+    { "name": "Phoenix Suns", "wins": 39, "losses": 43, "winPct": 0.48, "pointDiff": -0.5, "rating": 75, "base": 75 },
+    { "name": "Portland Trail Blazers", "wins": 35, "losses": 47, "winPct": 0.43, "pointDiff": -2.1, "rating": 72, "base": 72 },
+    { "name": "New Orleans Pelicans", "wins": 31, "losses": 51, "winPct": 0.38, "pointDiff": -3.3, "rating": 70, "base": 70 },
+    { "name": "Utah Jazz", "wins": 27, "losses": 55, "winPct": 0.33, "pointDiff": -4.8, "rating": 67, "base": 67 }
+  ],
+  "sources": [
+    { "name": "Preseason baseline", "status": "ok", "latencyMs": 0, "updatedAt": "2026-10-27T00:00:00.000Z" }
+  ],
+  "injuries": [],
+  "warning": null
+}
