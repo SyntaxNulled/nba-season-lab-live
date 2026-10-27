@@ -13,8 +13,15 @@ const MODULES = [
   "playoffs.js",
   "runner.js",
   "season.js",
+  "sim.worker.js",
   "ui.js"
 ];
+
+test("sim.worker.js wires postMessage/onmessage for batched runs", () => {
+  const src = read("sim.worker.js");
+  assert.ok(/postMessage/.test(src), "worker must post progress/results via postMessage");
+  assert.ok(/onmessage/.test(src), "worker must register onmessage handler");
+});
 
 test("main.js imports $ and $$ it uses (regression: ReferenceError on live site)", () => {
   const src = read("main.js");
