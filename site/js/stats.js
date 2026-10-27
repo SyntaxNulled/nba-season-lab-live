@@ -16,5 +16,7 @@ export function wilsonCI(success, total, z = 1.96) {
   const denom = 1 + z2 / n;
   const centre = (p + z2 / (2 * n)) / denom;
   const halfWidth = (z / denom) * Math.sqrt((p * (1 - p)) / n + (z2) / (4 * n * n));
-  return { lo: centre - halfWidth, hi: centre + halfWidth };
+  const lo = Math.max(0, centre - halfWidth);
+  const hi = Math.min(1, centre + halfWidth);
+  return { lo, hi };
 }

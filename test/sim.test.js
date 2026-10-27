@@ -147,9 +147,9 @@ test("rng: createRng produces deterministic float sequences", () => {
 });
 
 test("runner: same seed produces identical deterministic results", () => {
-  const cfg = { teams: TEAMS, sims: 100, homeAdvantage: 3, volatilityIndex: 1, playin: true, rng: createRng(42) };
-  const a = simulate(cfg);
-  const b = simulate(cfg);
+  const cfg = { teams: TEAMS, sims: 100, homeAdvantage: 3, volatilityIndex: 1, playin: true };
+  const a = simulate({ ...cfg, rng: createRng(42) });
+  const b = simulate({ ...cfg, rng: createRng(42) });
   assert.deepStrictEqual(a.results, b.results);
 });
 
