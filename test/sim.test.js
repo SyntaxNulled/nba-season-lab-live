@@ -4,6 +4,8 @@ import { logistic } from "../site/js/model.js";
 import { series, bracket, playoffField } from "../site/js/playoffs.js";
 import { simulate } from "../site/js/runner.js";
 import { TEAMS, VOLATILITY_PRESETS } from "../site/js/baseline.js";
+import { createRng } from "../site/js/rng.js";
+import { wilsonCI } from "../site/js/stats.js";
 
 const originalRandom = Math.random;
 
@@ -132,4 +134,50 @@ test("runner: volatility presets map to the documented values", () => {
   assert.strictEqual(VOLATILITY_PRESETS[2].label, "Low");
   assert.ok(VOLATILITY_PRESETS[0].value > VOLATILITY_PRESETS[1].value);
   assert.ok(VOLATILITY_PRESETS[1].value > VOLATILITY_PRESETS[2].value);
+});
+
+test("rng: createRng produces deterministic float sequences", () => {
+  const a = createRng(42);
+  const b = createRng(42);
+  const seqA = [a(), a(), a()];
+  const seqB = [b(), b(), b()];
+  assert.deepStrictEqual(seqA, seqB);
+  const seqC = [createRng(7)(), createRng(7)(), createRng(7)()];
+  assert.notDeepStrictEqual(seqA, seqC);
+});
+
+test("runner: same seed produces identical deterministic results", () => {
+  const cfg = { teams: TEAMS, sims: 100, homeAdvantage: 3, volatilityIndex: 1, playin: true, rng: createRng(42) };
+  const a = simulate(cfg);
+  const b = simulate(cfg);
+  assert.deepStrictEqual(a.results, b.results);
+});
+
+test("runner: wilson CIs bound probabilities and satisfy lo <= p <= hi", () => {
+  const out = simulate({ teams: TEAMS, sims: 200, homeAdvantage: 3, volatilityIndex: 1, playin: true, rng: createRng(7) });
+  for (const x of out.results) {
+    const tFrac = x.title / 100;
+    const poFrac = x.po / 100;
+    const finFrac = x.fin / 100;
+    assert.ok(x.titleLo <= tFrac && tFrac <= x.titleHi);
+    assert.ok(x.poLo <= poFrac && poFrac <= x.poHi);
+    assert.ok(x.finLo <= finFrac && finFrac <= x.finHi);
+    assert.ok(x.titleLo >= 0);
+    assert.ok(x.titleHi >= x.titleLo);
+  }
+});
+
+test("wilsonCI: returns ordered bounds that contain the estimate", () => {
+  const cases = [
+    { success: 0, total: 10 },
+    { success: 3, total: 10 },
+    { success: 7, total: 10 },
+    { success: 10, total: 10 }
+  ];
+  for (const c of cases) {
+    const { lo, hi } = wilsonCI(c.success, c.total);
+    assert.ok(hi >= lo, "hi >= lo");
+    assert.ok(lo >= 0, "lo >= 0");
+    assert.ok(lo <= c.success / c.total && c.success / c.total <= hi, "contains estimate");
+  }
 });

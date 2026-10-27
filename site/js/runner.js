@@ -1,14 +1,11 @@
 import { playoffField, bracket, series } from "./playoffs.js";
 import { VOLATILITY_PRESETS } from "./baseline.js";
+import { wilsonCI } from "./stats.js";
 
 const FINALS_HOME_ADVANTAGE_SHARE = 0.45;
 
 /**
  * Run the Monte Carlo simulation.
- *
- * Returns a plain data object with per-team playoff / Finals / championship
- * frequencies plus headline summaries. No DOM is touched here so the engine
- * can be unit-tested and later run in a Web Worker.
  *
  * @param {Object} config
  * @param {Array} config.teams - team objects (must carry id, conf, rating)
@@ -16,14 +13,16 @@ const FINALS_HOME_ADVANTAGE_SHARE = 0.45;
  * @param {number} config.homeAdvantage - rating points for home court
  * @param {number} config.volatilityIndex - 0=High, 1=Medium, 2=Low
  * @param {boolean} config.playin - include play-in tournament
- * @returns {Object} { results, top, finalist, dark, confidence }
+ * @param {Function} config.rng - PRNG function returning floats in [0, 1)
+ * @returns {Object} { results, top, finalist, dark, confidence, sims }
  */
 export function simulate({
   teams,
   sims,
   homeAdvantage,
   volatilityIndex,
-  playin = true
+  playin = true,
+  rng = Math.random
 }) {
   const vol = VOLATILITY_PRESETS[volatilityIndex].value;
   const counts = new Map(teams.map((t) => [t.id, { t, po: 0, fin: 0, title: 0 }]));
@@ -33,28 +32,39 @@ export function simulate({
   };
 
   for (let i = 0; i < sims; i++) {
-    const east = playoffField("East", teams, playin);
-    const west = playoffField("West", teams, playin);
+    const east = playoffField("East", teams, playin, rng);
+    const west = playoffField("West", teams, playin, rng);
 
     [...east, ...west].forEach((t) => bump(t.id, "po"));
 
-    const eastChampion = bracket(east, homeAdvantage, vol);
-    const westChampion = bracket(west, homeAdvantage, vol);
+    const eastChampion = bracket(east, homeAdvantage, vol, rng);
+    const westChampion = bracket(west, homeAdvantage, vol, rng);
 
     bump(eastChampion.id, "fin");
     bump(westChampion.id, "fin");
 
-    const champion = series(eastChampion, westChampion, homeAdvantage * FINALS_HOME_ADVANTAGE_SHARE, vol);
+    const champion = series(eastChampion, westChampion, homeAdvantage * FINALS_HOME_ADVANTAGE_SHARE, vol, rng);
     bump(champion.id, "title");
   }
 
   const results = [...counts.values()]
-    .map((x) => ({
-      ...x,
-      po: (x.po / sims) * 100,
-      fin: (x.fin / sims) * 100,
-      title: (x.title / sims) * 100
-    }))
+    .map((x) => {
+      const titleCi = wilsonCI(x.title, sims);
+      const poCi = wilsonCI(x.po, sims);
+      const finCi = wilsonCI(x.fin, sims);
+      return {
+        t: x.t,
+        po: (x.po / sims) * 100,
+        fin: (x.fin / sims) * 100,
+        title: (x.title / sims) * 100,
+        titleLo: titleCi.lo,
+        titleHi: titleCi.hi,
+        poLo: poCi.lo,
+        poHi: poCi.hi,
+        finLo: finCi.lo,
+        finHi: finCi.hi
+      };
+    })
     .sort((a, b) => b.title - a.title);
 
   const top = results[0];
