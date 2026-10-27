@@ -1,4 +1,5 @@
-import { test, assert } from "node:test";
+import { test } from "node:test";
+import assert from "node:assert/strict";
 import { TEAMS } from "../site/js/baseline.js";
 import { loadSnapshot } from "../site/js/loader.js";
 

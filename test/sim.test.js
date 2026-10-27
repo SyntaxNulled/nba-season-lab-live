@@ -1,4 +1,5 @@
-import { test, assert } from "node:test";
+import { test } from "node:test";
+import assert from "node:assert/strict";
 import { logistic } from "../site/js/model.js";
 import { series, bracket, playoffField } from "../site/js/playoffs.js";
 import { simulate } from "../site/js/runner.js";
