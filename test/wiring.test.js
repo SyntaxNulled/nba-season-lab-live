@@ -1,4 +1,5 @@
-import { test, assert } from "node:test";
+import { test } from "node:test";
+import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 
 const SITE_JS = new URL("../site/js/", import.meta.url);
