@@ -1,5 +1,3 @@
-import { logistic } from "./model.js";
-
 const GAMES_PER_SEASON = 82;
 const BASELINE_RATING = 78;
 const SLOPE_DIVISOR = 75;

@@ -1,6 +1,7 @@
 import { TEAMS } from "./baseline.js";
 import { simulate } from "./runner.js";
 import { loadSnapshot } from "./loader.js";
+import { $, $$ } from "./ui.js";
 import * as ui from "./ui.js";
 
 let teams = TEAMS.map((t) => ({ ...t }));
