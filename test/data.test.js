@@ -107,7 +107,7 @@ test("buildSnapshot: ingests ESPN data with stubbed fetch", async (t) => {
   assert.strictEqual(snapshot.teams[0].rating, ratingFromStats(snapshot.teams[0]));
   const games = snapshot.sources.find((s) => s.name === "NBA schedule");
   assert.strictEqual(games.status, "ok");
-  assert.strictEqual(games.records, 2);
+  assert.strictEqual(games.games, 2, "schedule coverage exposed as game count");
   assert.strictEqual(snapshot.warning, null);
 });
 

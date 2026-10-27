@@ -132,15 +132,20 @@ export async function buildSnapshot() {
       ? "Live standings incomplete; simulator retains its local baseline for unmatched teams."
       : null;
 
+  // Public source health records: array-valued adapters (standings, injuries)
+  // expose a record count; object-valued adapters (schedule) spread their data.
+  const publicSources = sources.map(({ data, ...s }) => {
+    if (Array.isArray(data)) return { ...s, records: data.length };
+    if (data && typeof data === "object") return { ...s, ...data };
+    return s;
+  });
+
   return {
     generatedAt: new Date().toISOString(),
     cacheSeconds: 300,
     season: "current",
     teams,
-    sources: sources.map(({ data, ...s }) => ({
-      ...s,
-      records: Array.isArray(data) ? data.length : undefined
-    })),
+    sources: publicSources,
     injuries,
     warning
   };
