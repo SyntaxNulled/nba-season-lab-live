@@ -10,10 +10,11 @@ function post(msg) {
 
 self.onmessage = (event) => {
   const data = event.data || {};
-  const config = data.config;
-  const batchSize = data.batchSize || BATCH_SIZE;
-  const seed = (config && config.seed) || 1;
-  const totalBatches = Math.max(1, Math.ceil(config.sims / batchSize));
+  const config = data.config || {};
+  const batchSize = config.batchSize || BATCH_SIZE;
+  const seed = config.seed || 1;
+  const sims = config.sims || 1000;
+  const totalBatches = Math.max(1, Math.ceil(sims / batchSize));
   let batch = 0;
   let prevShare = -1;
   let stoppedEarly = false;
@@ -24,11 +25,11 @@ self.onmessage = (event) => {
 
   function runBatch() {
     const start = batch * batchSize;
-    const n = Math.min(batchSize, config.sims - start);
+    const n = Math.min(batchSize, sims - start);
     const result = simulate(Object.assign({}, config, { sims: n, rng: createRng(seed + batch) }));
     const share = (result.top && result.top.title) || 0;
     batch += 1;
-    post({ type: "progress", completed: start + n, total: config.sims });
+    post({ type: "progress", completed: start + n, total: sims });
 
     const converged = config.converge && batch >= 2 && Math.abs(share - prevShare) < 0.001;
     prevShare = share;
