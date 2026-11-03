@@ -47,7 +47,11 @@ self.onmessage = (event) => {
   try {
     runBatch();
   } catch (e) {
-    post({ type: "result", result: null, stoppedEarly: false, error: "worker: " + (e && e.stack ? e.stack : String(e)) });
+    let detail = "worker: " + (e && e.stack ? e.stack : String(e));
+    try {
+      detail += " || dataKeys=" + Object.keys(data || {}) + " config=" + JSON.stringify(data && data.config ? Object.keys(data.config) : null);
+    } catch (e2) {}
+    post({ type: "result", result: null, stoppedEarly: false, error: detail });
   }
 };
 
