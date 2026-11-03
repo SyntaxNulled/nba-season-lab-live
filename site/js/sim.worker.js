@@ -44,7 +44,11 @@ self.onmessage = (event) => {
     finish(simulate(Object.assign({}, config, { rng: createRng(seed) })));
   };
 
-  runBatch();
+  try {
+    runBatch();
+  } catch (e) {
+    post({ type: "result", result: null, stoppedEarly: false, error: "worker: " + (e && e.stack ? e.stack : String(e)) });
+  }
 };
 
 self.postMessage({ type: "ready" });

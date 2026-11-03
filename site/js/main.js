@@ -44,7 +44,11 @@ function run() {
       if (!worker) {
         worker = new Worker(new URL("./sim.worker.js", import.meta.url), { type: "module" });
         worker.onmessage = (e) => {
-          if (e.data?.type === "result" && e.data.result) applyResult(e.data.result, token);
+          const d = e.data;
+          if (d?.type === "result") {
+            if (d.error) console.error("[sim-worker] error:", d.error);
+            else if (d.result) applyResult(d.result, token);
+          }
         };
         worker.onerror = () => {
           // Worker unavailable/failed -> fall back to main-thread simulation.
