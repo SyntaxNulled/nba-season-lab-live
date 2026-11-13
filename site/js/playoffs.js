@@ -39,12 +39,13 @@ export function series(a, b, home = 0, vol = 1, rng = Math.random) {
  * @param {Array} teams - full team list
  * @param {boolean} withPlayin - include the play-in tournament
  * @param {Function} rng - PRNG function returning floats in [0, 1)
+ * @param {Map<number, number>} winsById - optional precomputed teamId -> wins
  * @returns {Array} playoff field: top 6 + play-in winners as seeds 7/8
  */
-export function playoffField(conf, teams, withPlayin = true, rng = Math.random) {
+export function playoffField(conf, teams, withPlayin = true, rng = Math.random, winsById = null) {
   const arr = teams
     .filter((t) => t.conf === conf)
-    .map((t) => ({ t, w: sampleWins(t, rng) + rng() }))
+    .map((t) => ({ t, w: winsById && winsById.has(t.id) ? winsById.get(t.id) : sampleWins(t, rng) + rng() }))
     .sort((a, b) => b.w - a.w);
 
   if (!withPlayin) {

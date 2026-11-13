@@ -15,6 +15,7 @@ export async function loadSnapshot() {
   let generatedAt = null;
   let sources = [];
   let matched = 0;
+  let games = null;
 
   try {
     const res = await fetch(SNAPSHOT_PATH, { cache: "no-cache" });
@@ -35,11 +36,12 @@ export async function loadSnapshot() {
         source = "snapshot";
         generatedAt = j.generatedAt || null;
         sources = j.sources || [];
+        games = Array.isArray(j.games) ? j.games : null;
       }
     }
   } catch (_err) {
     // Network or file unavailable — keep the editable baseline.
   }
 
-  return { teams, source, matched, generatedAt, sources };
+  return { teams, source, matched, generatedAt, sources, games };
 }

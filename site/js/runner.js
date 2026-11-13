@@ -1,6 +1,7 @@
 import { playoffField, bracket, series } from "./playoffs.js";
 import { VOLATILITY_PRESETS } from "./baseline.js";
 import { wilsonCI } from "./stats.js";
+import { simulateSchedule } from "./schedule.js";
 
 const FINALS_HOME_ADVANTAGE_SHARE = 0.45;
 
@@ -14,6 +15,9 @@ const FINALS_HOME_ADVANTAGE_SHARE = 0.45;
  * @param {number} config.volatilityIndex - 0=High, 1=Medium, 2=Low
  * @param {boolean} config.playin - include play-in tournament
  * @param {Function} config.rng - PRNG function returning floats in [0, 1)
+ * @param {Array} [config.games] - optional schedule of {home, away} team ids;
+ *   when present the regular season is simulated from real matchups instead of
+ *   the default 82-game Bernoulli slate.
  * @returns {Object} { results, top, finalist, dark, confidence, sims }
  */
 export function simulate({
@@ -22,9 +26,11 @@ export function simulate({
   homeAdvantage,
   volatilityIndex,
   playin = true,
-  rng = Math.random
+  rng = Math.random,
+  games = null
 }) {
   const vol = VOLATILITY_PRESETS[volatilityIndex].value;
+  const winsById = games ? simulateSchedule(games, teams, homeAdvantage, vol, rng) : null;
   const counts = new Map(teams.map((t) => [t.id, { t, po: 0, fin: 0, title: 0 }]));
   const bump = (id, key) => {
     const slot = counts.get(id);
@@ -32,8 +38,8 @@ export function simulate({
   };
 
   for (let i = 0; i < sims; i++) {
-    const east = playoffField("East", teams, playin, rng);
-    const west = playoffField("West", teams, playin, rng);
+    const east = playoffField("East", teams, playin, rng, winsById);
+    const west = playoffField("West", teams, playin, rng, winsById);
 
     [...east, ...west].forEach((t) => bump(t.id, "po"));
 

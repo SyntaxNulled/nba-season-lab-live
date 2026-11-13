@@ -8,12 +8,14 @@ import { BATCH_SIZE } from "./sim.worker.js";
 let teams = TEAMS.map((t) => ({ ...t }));
 let filter = "All";
 let last = [];
+let games = null;
 let worker = null;
 let runToken = 0;
 
 function readConfig() {
   return {
     teams,
+    games,
     sims: +$("#sims").value,
     homeAdvantage: +$("#home").value,
     volatilityIndex: +$("#vol").value,
@@ -74,6 +76,7 @@ function resetRatings() {
 async function init() {
   const snapshot = await loadSnapshot();
   teams = snapshot.teams;
+  games = snapshot.games || null;
 
   if (snapshot.source === "snapshot") {
     ui.setLiveStatus(

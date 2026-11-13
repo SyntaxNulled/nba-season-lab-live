@@ -12,6 +12,7 @@ const MODULES = [
   "model.js",
   "playoffs.js",
   "runner.js",
+  "schedule.js",
   "season.js",
   "sim.worker.js",
   "ui.js"
