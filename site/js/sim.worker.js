@@ -10,7 +10,7 @@ function post(msg) {
 
 self.onmessage = (event) => {
   const data = event.data || {};
-  const config = data.config || {};
+  const config = data.config || data || {};
   const batchSize = config.batchSize || BATCH_SIZE;
   const seed = config.seed || 1;
   const sims = config.sims || 1000;

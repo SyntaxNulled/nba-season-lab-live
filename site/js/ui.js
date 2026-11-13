@@ -66,13 +66,15 @@ export function renderResults(results, search = "") {
 }
 
 export function updateMetrics({ top, finalist, dark, confidence }) {
-  const halfWidth = (ci) => ((ci.hi - ci.lo) / 2) * 100;
+  const topHalf = top ? ((top.titleHi - top.titleLo) / 2) * 100 : 0;
+  const finalistHalf = finalist ? ((finalist.finHi - finalist.finLo) / 2) * 100 : 0;
+  const darkHalf = dark ? ((dark.titleHi - dark.titleLo) / 2) * 100 : 0;
   $("#fav").textContent = top.t.name;
-  $("#favPct").textContent = `${top.title.toFixed(1)}% ± ${halfWidth(top).toFixed(1)}% title odds`;
+  $("#favPct").textContent = `${top.title.toFixed(1)}% ± ${topHalf.toFixed(1)}% title odds`;
   $("#finalist").textContent = finalist.t.name;
-  $("#finalPct").textContent = `${finalist.fin.toFixed(1)}% ± ${halfWidth(finalist).toFixed(1)}% Finals odds`;
+  $("#finalPct").textContent = `${finalist.fin.toFixed(1)}% ± ${finalistHalf.toFixed(1)}% Finals odds`;
   $("#dark").textContent = dark.t.name;
-  $("#darkPct").textContent = `${dark.title.toFixed(1)}% ± ${halfWidth(dark).toFixed(1)}% title odds`;
+  $("#darkPct").textContent = `${dark.title.toFixed(1)}% ± ${darkHalf.toFixed(1)}% title odds`;
   $("#confidence").textContent = confidence;
 }
 
