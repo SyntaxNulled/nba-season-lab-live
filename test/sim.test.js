@@ -6,6 +6,7 @@ import { simulate } from "../site/js/runner.js";
 import { TEAMS, VOLATILITY_PRESETS } from "../site/js/baseline.js";
 import { createRng } from "../site/js/rng.js";
 import { wilsonCI } from "../site/js/stats.js";
+import { drawerSummary } from "../site/js/ui.js";
 
 const originalRandom = Math.random;
 
@@ -180,4 +181,24 @@ test("wilsonCI: returns ordered bounds that contain the estimate", () => {
     assert.ok(lo >= 0, "lo >= 0");
     assert.ok(lo <= c.success / c.total && c.success / c.total <= hi, "contains estimate");
   }
+});
+
+test("drawerSummary: maps a result row to display fields", () => {
+  const x = {
+    t: { id: 15, name: "Thunder", conf: "West", rating: 96, base: 96, color: "#007AC1" },
+    po: 61,
+    fin: 70,
+    title: 55,
+    titleLo: 0.48,
+    titleHi: 0.62
+  };
+  const s = drawerSummary(x);
+  assert.strictEqual(s.name, "Thunder");
+  assert.strictEqual(s.conf, "West");
+  assert.strictEqual(s.rating, 96);
+  assert.strictEqual(s.po, 61);
+  assert.strictEqual(s.fin, 70);
+  assert.strictEqual(s.title, 55);
+  assert.strictEqual(s.titleLo, 0.48);
+  assert.strictEqual(s.titleHi, 0.62);
 });

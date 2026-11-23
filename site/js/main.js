@@ -113,6 +113,10 @@ $("#resetRatings").onclick = () => {
   run();
 };
 
+$("#drawerClose").onclick = () => {
+  closeTeamDrawer();
+};
+
 $("#home").oninput = (e) => {
   $("#homeVal").textContent = "+" + (+e.target.value).toFixed(1);
 };

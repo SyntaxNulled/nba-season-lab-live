@@ -434,6 +434,76 @@ input[type="range"] {
   color: #c4b5fd;
 }
 
+.result-row {
+  cursor: pointer;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(420px, 92vw);
+  background: rgba(10, 12, 20, 0.94);
+  border-left: 1px solid var(--line);
+  padding: 22px;
+  z-index: 60;
+  transform: translateX(105%);
+  transition: transform 0.25s ease;
+  overflow: auto;
+}
+
+.drawer.open {
+  transform: translateX(0);
+}
+
+.drawer[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+.drawer:not([aria-hidden="true"]) {
+  visibility: visible;
+}
+
+.drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-title {
+  font-size: 26px;
+  margin: 6px 0 14px;
+}
+
+.drawer-odds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.drawer-odds div {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drawer-odds span {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.drawer-odds b {
+  font-size: 18px;
+}
+
 .tabs {
   display: flex;
   gap: 6px;

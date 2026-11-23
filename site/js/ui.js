@@ -87,6 +87,7 @@ export function renderResults(results, search = "") {
       <span>${x.fin.toFixed(1)}%</span>
       <span class="pct-title">${x.title.toFixed(1)}% ± ${(((x.titleHi - x.titleLo) / 2) * 100).toFixed(1)}%</span>
     `;
+    d.onclick = () => openTeamDrawer(x);
     box.appendChild(d);
   });
 }
@@ -102,6 +103,47 @@ export function updateMetrics({ top, finalist, dark, confidence }) {
   $("#dark").textContent = dark.t.name;
   $("#darkPct").textContent = `${dark.title.toFixed(1)}% ± ${darkHalf.toFixed(1)}% title odds`;
   $("#confidence").textContent = confidence;
+}
+
+export function drawerSummary(x) {
+  return {
+    name: x.t.name,
+    conf: x.t.conf,
+    rating: x.t.rating,
+    base: x.t.base,
+    color: x.t.color,
+    po: x.po,
+    fin: x.fin,
+    title: x.title,
+    titleLo: x.titleLo,
+    titleHi: x.titleHi
+  };
+}
+
+export function openTeamDrawer(x) {
+  const s = drawerSummary(x);
+  const half = ((s.titleHi - s.titleLo) / 2) * 100;
+  const host = $("#teamDrawer");
+  const body = $("#drawerBody");
+  body.innerHTML = `
+    <p class="eyebrow">${s.conf} CONF · RATING ${s.rating}</p>
+    <h3 class="drawer-title">${s.name}</h3>
+    <div class="drawer-odds">
+      <div><span>Playoff odds</span><b>${s.po.toFixed(1)}%</b></div>
+      <div><span>Finals odds</span><b>${s.fin.toFixed(1)}%</b></div>
+      <div><span>Championship odds</span><b>${s.title.toFixed(1)}%</b></div>
+      <div><span>95% CI</span><b>± ${half.toFixed(1)} pts</b></div>
+    </div>
+    <p class="hint">Strength rating ${s.rating} (baseline ${s.base}) drives this team's simulated results. Adjust sliders to model trades or injuries.</p>
+  `;
+  host.classList.add("open");
+  host.setAttribute("aria-hidden", "false");
+}
+
+export function closeTeamDrawer() {
+  const host = $("#teamDrawer");
+  host.classList.remove("open");
+  host.setAttribute("aria-hidden", "true");
 }
 
 export function setLiveStatus(text, online = false) {
