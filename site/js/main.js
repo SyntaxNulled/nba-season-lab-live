@@ -79,7 +79,10 @@ async function init() {
   teams = snapshot.teams;
   games = snapshot.games || null;
 
-  if (snapshot.source === "snapshot") {
+  if (snapshot.source === "live-espn") {
+    ui.setLiveStatus(`● Live ESPN · ${snapshot.matched} teams · ${new Date(snapshot.generatedAt).toLocaleTimeString()}`, true);
+    ui.renderHealth(snapshot.sources?.length ? snapshot.sources : [{ name: "ESPN standings (client)", status: "ok", latencyMs: 0, updatedAt: new Date().toISOString() }]);
+  } else if (snapshot.source === "snapshot") {
     ui.setLiveStatus(
       `● Snapshot · ${snapshot.matched} teams · ${new Date(snapshot.generatedAt).toLocaleTimeString()}`,
       true

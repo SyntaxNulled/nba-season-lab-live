@@ -1,13 +1,18 @@
 import { TEAMS } from "./baseline.js";
+import { fetchLiveEspn } from "./live.js";
+import { ratingFromStats } from "./teams.js";
 
 const SNAPSHOT_PATH = "./data/snapshot.json";
 
 /**
  * Load the team-strength snapshot.
  *
- * Tries the committed data/snapshot.json first (GitHub Pages deployment).
- * Falls back to the editable local baseline if the file is missing or the
- * network fails. Returns a clean team list plus provenance metadata.
+ * Hybrid strategy: the committed data/snapshot.json (written by the GitHub
+ * Actions snapshot workflow) is primary; if it is missing we fall back to the
+ * editable local baseline. We then attempt a client-direct refresh from live
+ * ESPN standings and apply it when the browser-side request succeeds.
+ *
+ * Returns a clean team list plus provenance metadata.
  */
 export async function loadSnapshot() {
   const teams = TEAMS.map((t) => ({ ...t }));
@@ -43,5 +48,26 @@ export async function loadSnapshot() {
     // Network or file unavailable — keep the editable baseline.
   }
 
-  return { teams, source, matched, generatedAt, sources, games };
+  // Client-direct live refresh attempt (snapshot stays primary when it works).
+  let liveRows = null;
+  try {
+    liveRows = await fetchLiveEspn();
+  } catch (_err) {
+    liveRows = null;
+  }
+
+  if (Array.isArray(liveRows) && liveRows.length > 0) {
+    for (const row of liveRows) {
+      const t = teams.find((b) => b.name === row.name);
+      if (!t) continue;
+      const rating = typeof row.rating === "number" ? row.rating : ratingFromStats(row);
+      t.rating = rating;
+      t.base = rating;
+      matched++;
+    }
+    source = "live-espn";
+    generatedAt = new Date().toISOString();
+  }
+
+  return { teams, source, matched, generatedAt, sources, games, live: liveRows };
 }
