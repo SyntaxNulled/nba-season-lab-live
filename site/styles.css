@@ -396,6 +396,44 @@ input[type="range"] {
   text-align: center;
 }
 
+.chart {
+  margin-top: 14px;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 22px 1fr 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 12px;
+}
+
+.chart-bar {
+  height: 8px;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  border-radius: 4px;
+  min-width: 2px;
+}
+
+.chart-rank {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.chart-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-pct {
+  text-align: right;
+  font-weight: 700;
+  color: #c4b5fd;
+}
+
 .tabs {
   display: flex;
   gap: 6px;

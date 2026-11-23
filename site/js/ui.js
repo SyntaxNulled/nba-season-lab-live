@@ -34,6 +34,32 @@ export function renderControls(teams, filter, onChange) {
   });
 }
 
+export function buildBars(results, n = 10) {
+  return [...(results || [])]
+    .sort((a, b) => b.title - a.title)
+    .slice(0, n)
+    .map((x) => ({ name: x.t.name, pct: x.title }));
+}
+
+export function renderChart(el, results, n = 10) {
+  const bars = buildBars(results, n);
+  el.innerHTML = "";
+  const max = bars.length > 0 ? Math.max(...bars.map((b) => b.pct), 0) : 1;
+  bars.forEach((b, i) => {
+    const row = document.createElement("div");
+    row.className = "chart-row";
+    const bar = document.createElement("div");
+    bar.className = "chart-bar";
+    bar.style.width = `${max > 0 ? (b.pct / max) * 100 : 0}%`;
+    row.innerHTML = `
+      <span class="chart-rank">${i + 1}</span>
+      <span class="chart-name">${b.name}</span>
+      <span class="chart-pct">${b.pct.toFixed(1)}%</span>
+    `;
+    el.appendChild(row);
+  });
+}
+
 export function renderResults(results, search = "") {
   const q = search.toLowerCase();
   const box = $("#results");

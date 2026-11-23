@@ -31,6 +31,7 @@ function applyResult(out, token) {
   last = out.results;
   ui.updateMetrics(out);
   ui.renderResults(last, $("#search").value);
+  ui.renderChart($("#chart"), last, 10);
 
   const toast = $("#toast");
   toast.classList.add("show");
